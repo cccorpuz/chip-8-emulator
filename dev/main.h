@@ -60,3 +60,5 @@ void incrementPC(uint8_t* RAM);
 uint16_t fetch(uint8_t* RAM);
 uint16_t execute(uint8_t* ram, struct Stack* stack, uint16_t opcode);
 
+/* Initialize SDL */
+int initializeSDL();

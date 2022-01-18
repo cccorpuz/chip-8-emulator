@@ -17,10 +17,11 @@
 
 #include "main.h"
 #include <errno.h>
-#include <curses.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
 #include <sys/timeb.h>
 #include <windows.h>
 
@@ -123,14 +124,6 @@ uint8_t update(int frequency) {
 		t_diff = (int) (1000.0 * (t_current.time - t_start.time) + (t_current.millitm - t_start.millitm));     
 	} while(t_diff < 1000/frequency);
 	return (uint8_t) t_diff;
-}
-
-void initializeScreen(int width, int height) {
-	initscr();
-	noecho();
-	resize_term(DISPLAY_HEIGHT, DISPLAY_WIDTH);
-	refresh();
-	return;
 }
 
 /* Program execution functions */
@@ -320,11 +313,25 @@ uint16_t execute(uint8_t* RAM, struct Stack* stack, uint16_t opcode) {
 	return 1;
 }
 
-int main() {
+int initializeSDL() {
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) 
+	{
+		printf("Error: SDL initialization failed: %s\n", SDL_GetError());
+		return 1;
+	}
+	printf("SDL initialized successfully.\n");
+	return 0;
+}
+
+int main(int argc, char* argv[]) {
 	uint16_t opcode = 0;
 	uint8_t* RAM;
 	int i; /* general memory FOR loop iterator */
 	struct Stack* stack;
+
+	/* Initialize SDL library */
+	if (initializeSDL() != 0) 
+		return 1;
 
 	/* Initializing memory */
 	RAM = malloc(RAMSIZE * sizeof(uint8_t));
@@ -340,15 +347,6 @@ int main() {
 	loadProgram(RAM);
 	RAM[PROGRAM_COUNTER_H] = 0x02;
 	RAM[PROGRAM_COUNTER_L] = 0x00;
-
-	/* Initialize screens */
-	initializeScreen(64, 32);
-	for (i = 0; i < 0x126; i++) {
-		opcode = fetch(RAM);
-		execute(RAM, stack, opcode);
-	}
-	getch();
-	endwin();
 	
 	/* Memory after loading all data */
 	printf("********** MEMORY **********\n");
