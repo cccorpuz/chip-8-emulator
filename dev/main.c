@@ -359,6 +359,6 @@ int main(int argc, char* argv[]) {
 	
 
 	/* Decoding the program data (opcodes) */
-
+	printf(".");
 	return 0;
 } /* end main() */
